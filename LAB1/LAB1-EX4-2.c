@@ -1,7 +1,5 @@
 #include <unistd.h>
 #include <sys/wait.h>
-#include <stdio.h>
-#include <stdlib.h>
 
 int main () {
 
@@ -10,11 +8,12 @@ int main () {
 
 	filho_pid = fork();
 	
-	if (filho_pid != 0 ) { 
-
-}
+	if (filho_pid != 0 ) {
+		int status;
+		waitpid(filho_pid,&status,0);
+	}
 	else {
 		execv("/bin/echo",argv);
-}
+	}
 	return 0;
 }

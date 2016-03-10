@@ -2,6 +2,8 @@
 #include <sys/wait.h>
 #include <stdio.h>
 
+
+//
 int main () {
 	
 	int filho_pid = fork();
@@ -10,9 +12,9 @@ int main () {
 		int status;
 		printf("Pai pid: %d\n", getpid());
 		waitpid(filho_pid,&status,0);
-}
+	}
 	else {
 		printf("Filho pid: %d\n", getpid());
-}
+	}
 	return 0;
 }
