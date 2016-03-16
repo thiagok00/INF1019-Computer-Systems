@@ -1,0 +1,16 @@
+Aluno: Thiago Klein de Angelis
+Matricula: 1321929
+
+Lab X
+_____
+Enunciado:
+
+Execução:
+gcc -Wall -o LAB1-EX1 LAB1-EX1.c
+./LAB1-EX1
+
+Saída:
+
+Reflexão/Justificativa:
+
+Codigo Fonte:
