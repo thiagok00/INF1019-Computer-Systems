@@ -16,12 +16,11 @@ int main (int argc,char *argv[]) {
 
 	segment = shmget (MEM_KEY, sizeof(char)*MAX_LENGTH, IPC_CREAT | IPC_EXCL | S_IRUSR | S_IWUSR);
 	if (segment == -1) {
-		printf("ERRO\n");
+		puts ("Erro na criação de segmento de memoria compartilhada.");
 		exit(1);
 	}
 	mday = (char *) shmat (segment, 0, 0);
 	strcpy(mday,msg);
-	printf ("%s\n",mday);
 
 	shmdt (mday); 
 

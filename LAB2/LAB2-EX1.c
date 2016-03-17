@@ -4,13 +4,13 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <sys/wait.h>
-
+#include <time.h>
 
 void preenche_matriz(int *matriz,int nlinhas, int ncolunas) {
 	int i,j;
 	for (i=0; i < nlinhas; i++) {
 		for (j=0; j < ncolunas; j++) {
-			matriz[i*ncolunas+j] = i+j;
+			matriz[i*ncolunas+j] = rand()%11;
 		}
 	}
 }
@@ -29,20 +29,26 @@ int main (int argc,char *argv[]) {
 	int *m1, *m2, *m3;
 	int id, status, nrows = 4, ncolumns = 4,i,qtdfilhos; 
 
+	//seed para preencher matriz
+	srand ( time(NULL) );
+	
 	seg1 = shmget (IPC_PRIVATE, sizeof (int)*nrows*ncolumns, IPC_CREAT | IPC_EXCL | S_IRUSR | S_IWUSR);
 	if (seg1 == -1) {
+		puts ("Erro na criação de segmento de memoria compartilhada.");
 		exit(1);
 	}
 	m1 = (int *) shmat (seg1, 0, 0);
 
 	seg2 = shmget (IPC_PRIVATE, sizeof (int)*nrows*ncolumns, IPC_CREAT | IPC_EXCL | S_IRUSR | S_IWUSR);
 	if (seg2 == -1) {
+		puts ("Erro na criação de segmento de memoria compartilhada.");
 		exit(1);
 	}
 	m2 = (int *) shmat (seg2, 0, 0);
 
 	seg3 = shmget (IPC_PRIVATE, sizeof (int)*nrows*ncolumns, IPC_CREAT | IPC_EXCL | S_IRUSR | S_IWUSR);
 	if (seg3 == -1) {
+		puts ("Erro na criação de segmento de memoria compartilhada.");
 		exit(1);
 	}
 	m3 = (int *) shmat (seg3, 0, 0);
@@ -84,5 +90,5 @@ int main (int argc,char *argv[]) {
 	shmdt (m3); 
 	shmctl (seg3, IPC_RMID, 0);
 
-		return 0; 
+	return 0; 
 } 
