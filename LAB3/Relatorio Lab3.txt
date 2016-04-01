@@ -1,5 +1,7 @@
 Aluno: Thiago Klein de Angelis
+		João Pedro Garcia
 Matricula: 1321929
+		   1211768
 
 Lab 3
 _____
@@ -154,7 +156,7 @@ Program filho exceeded limit of 3 seconds!
 Child 19593 terminated within 3 seconds com estado 9.
 
 Reflexão/Justificativa:
-O processo pai vai tratar o sinal de SIGCHLD que é executado se o processo filho terminar antes, como o processo filho fica em loop, o pai pega o argumento (no caso 3), dorme por esse tempo, e ao acordar mata o processo filho, fazendo com que ele receba o sinal SIGCHLD, porém a execução do pai estava encerrando logo após a execução do kill sem tempo do sinal "chegar" por isso coloquei um "sleep(1)" depois por recomendações do professor.
+O processo pai vai tratar o sinal de SIGCHLD que é executado se o processo filho terminar antes, como o processo filho fica em loop, o pai pega o argumento (no caso 3), dorme por esse tempo, e ao acordar mata o processo filho, fazendo com que ele receba o sinal SIGCHLD, porém a execução do pai estava encerrando logo após a execução do kill sem tempo do sinal "chegar" por isso colocamos um "sleep(1)" depois por recomendações do professor.
 
 
 Codigo Fonte:
@@ -192,3 +194,89 @@ void childhandler(int signo) /* Executed if child dies beforeparent */{
 	printf("Child %d terminated within %d seconds com estado %d.\n", pid, delay, status); 
 	exit(0); 
 } 
+
+_____
+Enunciado:
+4) Usando SIGSTOP e SIGCONT faça um programa que crie 2 processos filho e alterne a execução dos filhos. 
+Após 10 trocas de contexto, o processo pai mata os processos filho.
+OBS: Os processos filho são formados por loops infinitos. 
+
+
+Execução:
+gcc -Wall -o LAB3-EX4 LAB3-EX4.c
+./LAB3-EX4
+
+Saída:
+[1] Executando filho pid: 7150.
+[2] Executando filho pid: 7151.
+[1] Executando filho pid: 7150.
+[2] Executando filho pid: 7151.
+[1] Executando filho pid: 7150.
+[2] Executando filho pid: 7151.
+[1] Executando filho pid: 7150.
+[2] Executando filho pid: 7151.
+[1] Executando filho pid: 7150.
+[2] Executando filho pid: 7151.
+[1] Executando filho pid: 7150.
+[2] Executando filho pid: 7151.
+[1] Executando filho pid: 7150.
+[2] Executando filho pid: 7151.
+[1] Executando filho pid: 7150.
+[2] Executando filho pid: 7151.
+[1] Executando filho pid: 7150.
+[2] Executando filho pid: 7151.
+[1] Executando filho pid: 7150.
+[2] Executando filho pid: 7151.
+Terminando execucao.
+
+
+Reflexão/Justificativa:
+Ao enviar o sinal SIGSTP o processo para execução e SIGCONT o processo retoma a execução, demos fork em dois filhos e fomos alternando a sua execução com um sleep no processo pai. Ao final finalizamos a execução deles com SIGKILL. Para testar se estava realmente alternando a execução nos rodamos em background e ficamos dando 'ps' para ver o 'TIME'.
+
+Codigo Fonte:
+
+#include <stdio.h>
+#include <signal.h>
+#include <stdlib.h> 
+#include <unistd.h>
+#include <sys/wait.h>
+#define TEMPOEXEC 2
+
+int main  (int argc, char *argv[]) { 
+	pid_t pid1,pid2; 
+	
+	if ((pid1 = fork()) < 0) { 
+		fprintf(stderr, "Erro ao criar filho\n"); 
+		exit(-1); 
+	} 
+	if (pid1 == 0){ /* child 1*/
+		while(1);printf("teste");}
+	else/* parent */{ 
+			if ((pid2 = fork()) < 0) { 
+				fprintf(stderr, "Erro ao criar filho 2\n"); 
+				exit(-1);
+			}
+			if (pid2 == 0) /* child 2*/
+				while(1);
+			else {
+				int i;
+				for (i = 0; i < 10; i++ ) {
+					kill(pid1, SIGCONT);
+					kill(pid2, SIGSTOP);
+					printf("[1] Executando filho pid: %d.\n",pid1); 
+					
+					sleep(TEMPOEXEC);
+					
+					kill(pid1, SIGSTOP);
+					kill(pid2,SIGCONT);
+					printf("[2] Executando filho pid: %d.\n",pid2);
+ 
+					sleep(TEMPOEXEC);		
+				}
+				kill(pid1, SIGKILL);
+				kill(pid2, SIGKILL); 
+				printf("Terminando execucao.\n");
+			}
+	} 
+	return 0; 
+}
