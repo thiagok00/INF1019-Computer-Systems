@@ -34,15 +34,15 @@ void chamadaTerminada (int sinal) {
 
 	time(&final_t);
 	diff_t = difftime(final_t, ini_t);
-	printf("Chamada terminada. Duracao: %li\n",diff_t);
+	printf("Chamada terminada. Duracao: %li m %li s \n",diff_t/60, diff_t%60);
 	
-	if( diff_t <= 100) {
+	if( diff_t <= 60) {
 		custoCentavos = diff_t*2;
 	}
 	else {
-		custoCentavos = 100*2;
-		diff_t -= 100;
+		custoCentavos = 60*2;
+		diff_t -= 60;
 		custoCentavos += diff_t;	
 	}
-	printf("Custo ligacao: R$%li,%li\n",custoCentavos/100,custoCentavos%100);
+	printf("Custo ligacao: R$%li,%02li\n",custoCentavos/100,custoCentavos%100);
 }

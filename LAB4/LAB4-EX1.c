@@ -20,7 +20,7 @@ int main (void) {
 	printf("Diferenca %d\n",n1-n2);
 	printf("Multiplicacao: %d\n",n1*n2);
 	printf("Divisao: %d\n",n1/n2);
-
+	
 
 	return 0;
 }
