@@ -6,7 +6,6 @@
 #include <sys/shm.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include "EscalonadorLottery.h"
 #define FATIA_TEMPO 0.5
 #define MAX 20
 
@@ -27,9 +26,8 @@ static Processos p;
 
 int main (int argc, char* argv[]) {
 
-	int i,segmento, *parouExecutar;
+	int i;//;,segmento, *parouExecutar;
 	FILE *saida;
-	int i;
 
 	p.n = 0;
 
@@ -38,9 +36,9 @@ int main (int argc, char* argv[]) {
 		fprintf(stderr, "Erro abrir arquivo de saida\n");
 		exit(1);
 	}
-
-	for (i = 0;i < argc; i ++) {
-		printf("%s",argv[i]);
+	printf("uhul %d\n",argc);
+	for (i = 0;i < argc; i++) {
+		printf("argv %d: %s.\n",i,argv[i]);
 	}
 
 

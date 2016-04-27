@@ -1,0 +1,5 @@
+Exec prog1 numtickets=2
+Exec prog2 numtickets=3
+Exec prog3 numtickets=1
+Exec prog4 numtickets=2
+Exec prog5 numtickets=1

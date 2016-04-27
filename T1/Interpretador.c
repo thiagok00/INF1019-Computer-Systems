@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 
 #define DEFAULT_RR "execRR.txt"
@@ -12,8 +13,8 @@
 
 int main (void) {
 
-	int resp,argc = 0;
-	char argv[200];
+	int resp,i = 0;
+	char *argv[200];
 	FILE *input = NULL;
 
 	printf("Escolha o metodo de escalonamento:\n1. Round Robin\n2. Lottery\n3. Prioridade\n");
@@ -37,41 +38,40 @@ int main (void) {
 
 	if (resp == 1) {
 		char str[20];
-		int numtickets;
-		while (fscanf(input,"Exec %s[^\n]",str,&pr) != EOF) {
-			printf("%s %d\n",str,numtickets);
-			argv[argc++] = str;
-			argv[argc++] = numtickets;
+		while (fscanf(input,"Exec %s[^\n]",str) != EOF) {
+			printf("%s\n",str);
+			argv[i++] = str;
 		}
-		execve("EscalonadorRR",argv);
+		execv("EscalonadorRR",argv);
 	}
 	if (resp == 2) {
-		char str[20];
+		char aux[20];
 		int numtickets;
-		while (fscanf(input,"Exec %s numtickets=%d [^\n]",str,&pr) != EOF) {
-			printf("%s %d\n",str,numtickets);
-			argv[argc++] = str;
-			argv[argc++] = numtickets;
+		argv[i++] = "EscalonadorLottery";
+		while (fscanf(input,"Exec %s numtickets=%d [^\n]",aux,&numtickets) != EOF) {
+			char *str3 = (char*) malloc(sizeof(char)*20);
+			char *str4 = (char*) malloc(sizeof(char)*4);
+			strcpy(str3,aux);
+			argv[i++] = str3;
+			sprintf(str4,"%d",numtickets);
+			argv[i++] = str4;
 		}
-		execve("EscalonadorLottery",argv);
+		argv[i] = 0;
+		execv("EscalonadorLottery",argv);
 	}
 
 	if (resp == 3) {
 		char str[20];
+		char str2[3];
 		int pr;
 		while (fscanf(input,"Exec %s prioridade=%d [^\n]",str,&pr) != EOF) {
 			printf("%s %d\n",str,pr);
-			argv[argc++] = str;
-			argv[argc++] = pr;
+			argv[i++] = str;
+			sprintf(str2,"%d",pr);
+			argv[i++] = str2;
 		}
-		execve("EscalonadorPrioridade",argv);
+		execv("EscalonadorPrioridade",argv);
 	}
-
-
-
-
-
-
 
 	return 0;
 }
