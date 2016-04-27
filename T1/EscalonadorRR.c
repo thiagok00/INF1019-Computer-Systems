@@ -109,7 +109,7 @@ int main (int argc, char* argv[]) {
 		kill(p->pid_filho, SIGCONT);
 		sleep(FATIA_TEMPO);
 		kill(p->pid, SIGSTOP);
-		kill(p->pid, SIGSTOP);
+		kill(p->pid_filho, SIGSTOP);
 
 		if((*parouExecutar) == 1) {
 			*parouExecutar = 0;
@@ -126,6 +126,9 @@ int main (int argc, char* argv[]) {
 
 	return 0;
 }
+
+void criaProceso()
+
 
 void queue(Fila *f, Processo *p) {
 
