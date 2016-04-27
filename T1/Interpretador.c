@@ -13,9 +13,9 @@
 int main (void) {
 
 	int resp;
-	FILE *input;
+	FILE *input = NULL;
 
-	printf("Escolha o metodo de escalonamento:\n1. Round Robin\n2. Lottery\n 3. Prioridade\n");
+	printf("Escolha o metodo de escalonamento:\n1. Round Robin\n2. Lottery\n3. Prioridade\n");
 	scanf("%d",&resp);
 
 	if(resp == 1)
@@ -33,11 +33,12 @@ int main (void) {
 		exit(1);
 	}
 
-	if (resp == 1) {
+	if (resp == 3) {
 		char str[20];
 		int pr;
-		while (fscanf(in,"Exec %s prioridade=%d",str,&pr) != EOF) {
+		while (fscanf(input,"Exec %s prioridade=%d [^\n]",str,&pr) != EOF) {
 			printf("%s %d\n",str,pr);
+
 		}
 	}
 
