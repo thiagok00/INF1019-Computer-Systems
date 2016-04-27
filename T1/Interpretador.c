@@ -12,7 +12,8 @@
 
 int main (void) {
 
-	int resp;
+	int resp,argc = 0;
+	char argv[200];
 	FILE *input = NULL;
 
 	printf("Escolha o metodo de escalonamento:\n1. Round Robin\n2. Lottery\n3. Prioridade\n");
@@ -33,13 +34,37 @@ int main (void) {
 		exit(1);
 	}
 
+
+	if (resp == 1) {
+		char str[20];
+		int numtickets;
+		while (fscanf(input,"Exec %s[^\n]",str,&pr) != EOF) {
+			printf("%s %d\n",str,numtickets);
+			argv[argc++] = str;
+			argv[argc++] = numtickets;
+		}
+		execve("EscalonadorRR",argv);
+	}
+	if (resp == 2) {
+		char str[20];
+		int numtickets;
+		while (fscanf(input,"Exec %s numtickets=%d [^\n]",str,&pr) != EOF) {
+			printf("%s %d\n",str,numtickets);
+			argv[argc++] = str;
+			argv[argc++] = numtickets;
+		}
+		execve("EscalonadorLottery",argv);
+	}
+
 	if (resp == 3) {
 		char str[20];
 		int pr;
 		while (fscanf(input,"Exec %s prioridade=%d [^\n]",str,&pr) != EOF) {
 			printf("%s %d\n",str,pr);
-
+			argv[argc++] = str;
+			argv[argc++] = pr;
 		}
+		execve("EscalonadorPrioridade",argv);
 	}
 
 

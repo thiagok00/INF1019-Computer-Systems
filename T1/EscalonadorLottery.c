@@ -17,13 +17,20 @@ struct proc {
 	int n;
 };
 
+struct ticket {
+	int num;
+
+};
+
+
 static Processos p;
 
 int main (int argc, char* argv[]) {
 
 	int i,segmento, *parouExecutar;
 	FILE *saida;
-	
+	int i;
+
 	p.n = 0;
 
 	saida = fopen("SaidaLottery.txt","w");
@@ -32,6 +39,9 @@ int main (int argc, char* argv[]) {
 		exit(1);
 	}
 
+	for (i = 0;i < argc; i ++) {
+		printf("%s",argv[i]);
+	}
 
 
 
