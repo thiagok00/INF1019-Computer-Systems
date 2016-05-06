@@ -7,29 +7,23 @@
 
 int main (void) {
 
-	int fd,fd2,aux,pid;
+	int fd[2];
 
+	pipe(fd);
 
-	if ((fd=open("entrada.txt", O_RDONLY,0666)) == -1)  {
-		return -1;
+	if (fork() == 0) {
+		char *argv[] = {"ls", NULL};
+		close(1);
+		dup2(fd[1],1);
+		execv("/bin/ls",argv);
+
 	}
-	if ((fd2=open("saida.txt", O_WRONLY|O_CREAT|O_TRUNC,0666)) == -1)  {
-		return -1;w
-	}
+	else {
+		char *argv[] = {"cat", NULL};
+		close(0);
+		dup2(fd[0],0);
+		execv("/bin/cat",argv);
+	}	
 
-
-
-	if (dup2(fd,0) == -1) {
-		return -2;	
-	}
-	if (dup2(fd2,1) == -1) {
-		return -3;	
-	}
-	
-
-	while (scanf("%d",&aux) != -1) {
-		printf("Mult: %d\n",aux*10);
-	}
-	
 	return 0;
 }

@@ -14,14 +14,16 @@ int main (void) {
 	if ((fd=open("entrada.txt", O_RDONLY,0666)) == -1)  {
 		return -1;
 	}
-	if ((fd2=open("saida.txt", O_WRONLY|O_CREAT|O_TRUNC,0666)) == -1)  {
+	if ((fd2=open("saida.txt", O_WRONLY|O_CREAT,0666)) == -1)  {
 		return -1;
 	}
 
-	if (dup2(fd,0) == -1) {
+	close(0);
+	if (dup(fd) == -1) {
 		return -2;	
 	}
-	if (dup2(fd2,1) == -1) {
+	close(1);
+	if (dup(fd2) == -1) {
 		return -3;	
 	}
 	
