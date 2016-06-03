@@ -1,3 +1,40 @@
+/****************************************************************************************************
+ *
+ *	TRABALHO 2 - Sistemas de Computação
+ *	Professor: Markus Endler
+ *	03/06/2016
+ *
+ *	Aluno:	João Pedro Garcia 1211768
+ *	Aluno:	Thiago Klein      1321929
+ *
+ *
+ *
+ * O simulador deverá ter os seguintes quatro argumentos de linha de commando:	  	  
+ *  a) o algoritmo de  susbtituição de página sendo simulado (LRU/NRU/SEG)	  
+ *
+ *  b) o arquivo contendo a	sequência de endereços de memoria acessados	(arq.log)	
+ *  
+ *  c) o tamanho de cada página/quadro de página em KB (tamanhos a serem suportados 8 a 32 KB)  
+ *  d) o tamanho total de memoria física disponível em KB (faixa de valores: 128 KB a 16 MB).	
+ *
+ *  e) (opcional) Nivel detalhamento para modo DEBUG: -X 
+ *
+ * Exemplos:
+ *		sim-virtual LRU simulador.log 16 128 
+ *		sim-virtual NRU matriz.log 32 256 -1
+ *
+ * 
+ * Cada	linha do arquivo (.log) conterá um endereço de memória acessado	(em representação hexa-­‐decimal),
+ * seguido das letras R ou	W, indicando um	acesso de leitura ou escrita, respectivamente. P
+ *
+ * Exemplo:
+ * 0700ff10 R
+ * 2f6965a0 W
+ *
+ ****************************************************************************************************/
+
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -54,34 +91,28 @@ int main(int argc, char* argv[]) {
 		t_error("Erro abrir saida.txt");
 
 	/**************************/
-/*
-Executando o simulador...
-Arquivo de entrada: arquivo.log
-Tamanho da memoria fisica: 128 KB
-Tamanho das páginas: 8 KB
-Alg de substituição: lru
-Numero de Faltas de Páginas: 520
-Numero de Paginas escritas: 352
-*/
+
 	printf("Executando o Simulador...\n");
 
 
+	while (fscanf(input, "%x %c ", &addr, &rw) != EOF) {
+		//Imprimir Leitura
+		//printf("%x %c\n",addr,rw );
+
+
+
+
+	}
+	
 	printf("Arquivo de Entrada: %s\n",pathInput );
 	printf("Tamanho da Memoria fisica: %d KB\n",tamMem );
 	printf("Tamanho das Paginas: %d KB\n",tamPagina );
 	printf("Algoritmo de Substituicao: %s\n", algoritmo);
 	printf("Numero de Faltas de Paginas: %d\n",pageFault);
 	printf("Numero de Paginas Escritas: %d\n",pageWrite);
-
-
-
-
-	while (fscanf(input, "%x %c ", &addr, &rw) != EOF)
-		printf("%x %c\n",addr,rw );
-
-
-
 	fclose(input);
+	fclose(output);
+
 	return 0;
 }
 
