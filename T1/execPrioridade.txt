@@ -1,5 +1,0 @@
-Exec prog1 prioridade=7
-Exec prog2 prioridade=6
-Exec prog3 prioridade=5
-Exec prog4 prioridade=4
-Exec prog5 prioridade=3
