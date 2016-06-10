@@ -6,9 +6,6 @@
 #define NUM_THREADS 2
 #define N 8
 
-// gcc -Wall -o LAB8-EX3 LAB8-EX3.c -l pthread
-
-
 struct fila {
 	int n;
 	int ini;
@@ -85,7 +82,7 @@ void *consumidor (void *threadid)  {
 			sleep(2);
 			continue;		
 		}
-		printf("%d\n",fila_retira(f));
+		printf("CONSUMI:%d\n",fila_retira(f));
 		sleep(2);
 		i--;
 	}
