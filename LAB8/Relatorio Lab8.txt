@@ -1,7 +1,10 @@
 Aluno: Thiago Klein de Angelis
 Matricula: 1321929
 
-Lab X
+Aluno: João Pedro Garcia
+Matricula: 1211768
+
+Lab 8
 _____
 Enunciado:
 1) Implemente um programa que crie 2 threads:
