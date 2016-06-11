@@ -25,11 +25,11 @@
  *
  * 
  * Cada	linha do arquivo (.log) conterá um endereço de memória acessado	(em representação hexa-­‐decimal),
- * seguido das letras R ou	W, indicando um	acesso de leitura ou escrita, respectivamente. P
+ * seguido das letras R ou W, indicando um	acesso de leitura ou escrita, respectivamente.
  *
  * Exemplo:
- * 0700ff10 R
- * 2f6965a0 W
+ * 		0700ff10 R
+ * 		2f6965a0 W
  *
  ****************************************************************************************************/
 
@@ -39,8 +39,12 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <math.h>
 
 void t_error(char* msg);
+
+
+
 
 
 static FILE* output;
@@ -51,9 +55,8 @@ int main(int argc, char* argv[]) {
 	char rw;
 	FILE *input;
 	char *algoritmo,*pathInput;
-	int tamPagina = 0, tamMem = 0, pageFault = 0, pageWrite = 0;
+	int tamPagina = 0, tamMem = 0, pageFault = 0, pageWrite = 0, qtdQuadros, aux, bitsIndice, maximoPaginas;
 	int DEBUG = 0;
-
 
 	/* Leitura de Parametros */
 	if (argc < 5 || argc > 6) {
@@ -94,16 +97,34 @@ int main(int argc, char* argv[]) {
 
 	printf("Executando o Simulador...\n");
 
+	/* Quantidade de quadros na memoria fisica */
+	qtdQuadros = tamMem/tamPagina;
+
+	/* Pegando a quantidade de bits relativos ao indice da pagina */
+	aux = tamPagina*1024;
+	while(aux > 1) {
+		bitsIndice++;
+		aux /= 2;
+	}
+
+	/* Pegando tamanho maximo da tabela de paginas */
+	aux = 32 - bitsIndice;
+	maximoPaginas = 2;
+	while (aux) {
+		maximoPaginas *= 2;
+		aux--;
+	}
 
 	while (fscanf(input, "%x %c ", &addr, &rw) != EOF) {
+		
+		int pageIndex = addr>>bitsIndice;
 		//Imprimir Leitura
 		//printf("%x %c\n",addr,rw );
-
-
-
-
+		if (pageIndex > maximoPaginas)
+			printf("algo errado nao esta certo\n");
 	}
 	
+
 	printf("Arquivo de Entrada: %s\n",pathInput );
 	printf("Tamanho da Memoria fisica: %d KB\n",tamMem );
 	printf("Tamanho das Paginas: %d KB\n",tamPagina );
@@ -113,9 +134,8 @@ int main(int argc, char* argv[]) {
 	fclose(input);
 	fclose(output);
 
-	return 0;
+	return 0;	
 }
-
 
 void t_error(char* msg) {
 	fprintf(stderr, "%s\n", msg);
