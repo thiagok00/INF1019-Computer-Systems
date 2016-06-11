@@ -40,13 +40,56 @@
 #include <unistd.h>
 #include <string.h>
 #include <math.h>
+#define true 1
+#define false 0
+
+
+/*
+ * Tipos
+*/
+typedef char bool;
+typedef struct page Page;
+typedef struct no No;
+typedef struct lista Lista;
+
+struct page {
+	bool r; //FLAG pagina referenciada
+	bool m; //FLAG pagina modificada
+	bool present;
+	int ultimoAcesso;
+};
+
+struct no {
+	No *ant, *prox;
+	Page *elem;
+};
+
+struct lista {
+	int n;
+	No *ini,*fim;
+	
+};
+
+
+/*
+ * Funcoes
+*/
+
+Lista* lista_cria();
+void  lista_insere(Lista *f, Page *p);
+Page* lista_removefinal(Lista *f);
+int lista_removeelem(Lista *f, Page *p);
+
 
 void t_error(char* msg);
+void t_lru(Page *page, Lista *memFisica, int *pageWrite);
+int t_nru(Page *memVirtual, int *memFisica, int qtdQuadros, int indexPagina, int *pageWrite);
+int t_seg(Page *memVirtual, int *memFisica, int qtdQuadros, int indexPagina, int *pageWrite);
 
 
-
-
-
+/*
+ * Variaveis Globais
+*/
 static FILE* output;
 
 int main(int argc, char* argv[]) {
@@ -55,8 +98,10 @@ int main(int argc, char* argv[]) {
 	char rw;
 	FILE *input;
 	char *algoritmo,*pathInput;
-	int tamPagina = 0, tamMem = 0, pageFault = 0, pageWrite = 0, qtdQuadros, aux, bitsIndice, maximoPaginas;
+	int i,tamPagina = 0, tamMem = 0, pageFault = 0, pageWrite = 0, qtdQuadros, aux, bitsIndice, maximoPaginas, timer;
 	int DEBUG = 0;
+	Page *memVirtual;
+	Lista* memFisica;
 
 	/* Leitura de Parametros */
 	if (argc < 5 || argc > 6) {
@@ -102,6 +147,7 @@ int main(int argc, char* argv[]) {
 
 	/* Pegando a quantidade de bits relativos ao indice da pagina */
 	aux = tamPagina*1024;
+	bitsIndice = 0;
 	while(aux > 1) {
 		bitsIndice++;
 		aux /= 2;
@@ -115,13 +161,51 @@ int main(int argc, char* argv[]) {
 		aux--;
 	}
 
+	memVirtual = (Page*) malloc(maximoPaginas*sizeof(Page));
+	if(memVirtual == NULL)
+		t_error("Memoria Insuficiente para memoria virtual.");
+	printf("MAXIMO PAGINA %d\n",qtdQuadros );
+	for(i=0; i < maximoPaginas; i++) {
+		Page *p = &memVirtual[i];
+		p->r = false;
+		p->m = false;
+		p->ultimoAcesso = -1;
+		p->present = false;
+	}
+
+	memFisica = lista_cria();
+
+	timer = 0;
 	while (fscanf(input, "%x %c ", &addr, &rw) != EOF) {
 		
-		int pageIndex = addr>>bitsIndice;
-		//Imprimir Leitura
-		//printf("%x %c\n",addr,rw );
-		if (pageIndex > maximoPaginas)
-			printf("algo errado nao esta certo\n");
+		unsigned pageIndex;
+		Page *p;
+		
+		pageIndex = addr >> bitsIndice;
+	 	p = &memVirtual[pageIndex];
+
+		if(p->present) {
+			lista_removeelem(memFisica, p);
+			lista_insere(memFisica, p);
+		}
+		else {
+			pageFault++;
+			//Ainda existem quadros disponiveis na memoria
+			if(memFisica->n < qtdQuadros) {
+				lista_insere(memFisica,p);
+			}
+			else {	//Sem espaço, chama algoritmo e substituicao
+			//	t_lru(p,memFisica,&pageWrite);
+			}
+		}
+		p->r = true;
+		p->present = true;
+
+		if (rw == 'W')
+			p->m = true;
+		p->ultimoAcesso = timer;
+
+		timer++;		
 	}
 	
 
@@ -131,6 +215,8 @@ int main(int argc, char* argv[]) {
 	printf("Algoritmo de Substituicao: %s\n", algoritmo);
 	printf("Numero de Faltas de Paginas: %d\n",pageFault);
 	printf("Numero de Paginas Escritas: %d\n",pageWrite);
+
+	free(memVirtual);
 	fclose(input);
 	fclose(output);
 
@@ -141,3 +227,104 @@ void t_error(char* msg) {
 	fprintf(stderr, "%s\n", msg);
 	exit(1);
 }
+
+Lista* lista_cria() {
+	Lista *l;
+
+	l = (Lista *) malloc(sizeof(Lista));
+	if (l == NULL)
+		t_error("Memoria insuficiente");
+	l->n = 0;
+	l->ini = NULL;
+	l->fim = NULL;
+	return l;
+}
+
+void  lista_insere(Lista *f, Page *p) {
+
+	No* nv;
+
+	nv = (No*) malloc(sizeof(No));
+	if (nv == NULL)
+		t_error("Memoria Insuficiente");
+
+	nv->elem = p;
+	nv->prox = f->ini;
+	nv->ant = NULL;
+	if(f->ini != NULL)
+		f->ini->ant = nv;
+	f->ini = nv;
+	f->n++;
+	return;
+}
+
+Page* lista_removefinal(Lista *f) {
+
+	No* aux;
+	Page *ret;
+
+	if(f->n == 0)
+		return NULL;
+
+	ret = f->fim->elem;
+	aux = f->fim;
+	f->fim = aux->ant;
+	
+	if(f->fim != NULL)
+		f->fim->prox = NULL;
+	
+	free(aux);
+	f->n--;
+	return ret;
+}
+
+int lista_removeelem(Lista *f, Page *p){
+
+	No* aux = f->ini;
+	while(aux != NULL && aux->elem != p);
+	if (aux == NULL)
+		return -1;
+
+	if(aux->ant == NULL && aux->prox == NULL) {
+		free(aux);
+		f->ini = NULL;
+		f->fim = NULL;
+		f->n--;
+
+	}
+	else if (aux->ant == NULL) {
+		No* excl = aux;
+		f->ini = aux->prox;
+		free(excl);
+		f->ini->ant = NULL;
+		f->n--;
+	}
+	else if (aux->prox == NULL) {
+		lista_removefinal(f);		
+	}
+	else {
+		f->n--;
+		aux->ant->prox = aux->prox;
+		aux->prox->ant = aux->ant;
+		free(aux);
+	}
+	return 1;
+}
+
+
+void t_lru(Page *page, Lista *memFisica, int *pageWrite) {
+	Page *p = lista_removefinal(memFisica);
+	
+
+	lista_insere(memFisica,page);
+	p->r = false;
+	if (p->m == true)
+		(*pageWrite)++;
+	p->m = false;
+	p->present = false;
+
+
+}
+
+int t_nru(Page *memVirtual, int *memFisica, int qtdQuadros, int indexPagina, int *pageWrite) {return 0;}
+int t_seg(Page *memVirtual, int *memFisica, int qtdQuadros, int indexPagina, int *pageWrite) {return 0;}
