@@ -65,8 +65,8 @@ struct page {
 
 void t_error(char* msg);
 int t_lru(Page **memVirtual, int *memFisica, int qtdQuadros, int *pageWrite);
-int t_nru(Page **memVirtual, int *memFisica, int qtdQuadros, int *pageWrite);
-int t_seg(Page **memVirtual, int *memFisica, int qtdQuadros, int *pageWrite);
+int t_nru(Page **memVirtual, int *memFisica, int qtdQuadros, int *pageWrite, int timer);
+int t_seg(Page **memVirtual, int *memFisica, int qtdQuadros, int *pageWrite, int timer);
 
 
 /*
@@ -179,16 +179,22 @@ int main(int argc, char* argv[]) {
 			//Ainda existem quadros disponiveis na memoria
 			if( quadrosUsados < qtdQuadros) {
 				index = quadrosUsados;
-				quadrosUsados++;
-			}
+				quadrosUsados++;		
+						}
 			else {	//Sem espaço, chama algoritmo e substituicao
-				index = t_lru(memVirtual, memFisica, qtdQuadros, &pageWrite);
+				if (strcmp(algoritmo,"NRU") == 0)
+					index = t_nru(memVirtual, memFisica, qtdQuadros, &pageWrite,timer);
+				else if (strcmp(algoritmo,"LRU") == 0)
+					index = t_lru(memVirtual, memFisica, qtdQuadros, &pageWrite);
+				else
+					index = t_seg(memVirtual, memFisica, qtdQuadros, &pageWrite,timer);
 			}
 				p->present = true;
 				p->pageIndex = index;
 				memFisica[index] = pageIndex;
 
 		}
+
 		p->r = true;
 		p->present = true;
 
@@ -241,45 +247,86 @@ int t_lru(Page **memVirtual, int *memFisica, int qtdQuadros, int *pageWrite) {
 	return last;
 }
 
-int get_categoria(Page p) {
+int get_categoria(Page *p) {
 
-	if (p.r == false && p.m == false)
+	if (p->r == false && p->m == false)
 		return 1;
-	if (p.r == false && p.m == true)
+	if (p->r == false && p->m == true)
 		return 2;
-	if (p.r == true && p.m == false)
+	if (p->r == true && p->m == false)
 		return 3;
 	else
 		return 4;
 }
 
-int t_nru(Page **memVirtual, int *memFisica, int qtdQuadros, int *pageWrite) {
+int t_nru(Page **memVirtual, int *memFisica, int qtdQuadros, int *pageWrite, int timer) {
 
-	int i, last = 0, categoriaUltimo = 5;
-	Page *aux;
+	int i, last = 0, lastCat = 5;
+	Page *lastPage;
+
 	for ( i = 0; i < qtdQuadros; i ++) {
-		int categoria, index = memFisica[i];
-		Page *p;
-		p = memVirtual[index];
-		categoria = get_categoria(*p);
-		if (categoria < categoriaUltimo){ 
-			categoriaUltimo = categoria;
-			last = index;
-			if (categoriaUltimo == 1)
-				i=qtdQuadros;
+		Page *p = memVirtual[memFisica[i]];
+		int cat;
+
+		if (p->ultimoAcesso < timer - 20) {
+			p->r = false;
 		}
 
+		cat = get_categoria(p);
+		if (cat < lastCat) {
+			last = i;
+			lastCat = cat;
+			if (lastCat == 1)
+				break;
+		}
 	}
-
-	aux = memVirtual[last];
-	aux->present = false;
-	aux->r = false;
-	if (aux->m == true) {
+	lastPage = memVirtual[memFisica[last]];
+	lastPage->present = false;
+	lastPage->r = false;
+	if (lastPage->m == true) {
 		(*pageWrite)++;
-		aux->m = false;
+		lastPage->m = false;
 	}
-	aux->pageIndex = 0;
-
+	lastPage->pageIndex = 0;
+	lastPage->ultimoAcesso = 0;
 	return last;
 	}
-int t_seg(Page **memVirtual, int *memFisica, int qtdQuadros, int *pageWrite) {return 0;}
+
+int t_seg(Page **memVirtual, int *memFisica, int qtdQuadros, int *pageWrite, int timer) {
+
+	static int head = 0;
+	int i, last = 0, aux;
+	Page *lastPage;
+	aux = head;
+
+	for ( i = 0; i < qtdQuadros; i ++) {
+		Page *p = memVirtual[memFisica[aux%qtdQuadros]];
+
+		if(p->ultimoAcesso < timer - 20)
+			p->r = 0;
+
+		if (p->r == true) {
+			head++;
+			p->r = false;
+		}
+		else {
+			last = aux%qtdQuadros;
+			head++;
+			break;
+		}
+		aux++;
+	}
+	if (head == qtdQuadros)
+		head = 0;
+
+	lastPage = memVirtual[memFisica[last]];
+	lastPage->present = false;
+	lastPage->r = false;
+	if (lastPage->m == true) {
+		(*pageWrite)++;
+		lastPage->m = false;
+	}
+	lastPage->pageIndex = 0;
+	lastPage->ultimoAcesso = 0;
+	return last;
+}
