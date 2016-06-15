@@ -7,14 +7,15 @@
  *	Aluno:	João Pedro Garcia 1211768
  *	Aluno:	Thiago Klein      1321929
  *
- *
+ *	Simulador Memoria Virtual
  *
  * O simulador deverá ter os seguintes quatro argumentos de linha de commando:	  	  
  *  a) o algoritmo de  susbtituição de página sendo simulado (LRU/NRU/SEG)	  
  *  b) o arquivo contendo a	sequência de endereços de memoria acessados	(arq.log)	  
  *  c) o tamanho de cada página/quadro de página em KB (tamanhos a serem suportados 8 a 32 KB)  
  *  d) o tamanho total de memoria física disponível em KB (faixa de valores: 128 KB a 16 MB).	
- *  e) (opcional) Nivel detalhamento para modo DEBUG: -X 
+ *  e) (opcional) Nivel detalhamento para modo DEBUG: -X
+ *			X - indica nivel de detalhamento, 1,2,3 sendo 3 modo interativo. 
  *
  * Exemplos:
  *		sim-virtual LRU simulador.log 16 128 
@@ -67,9 +68,10 @@ int t_seg(Page **memVirtual, int *memFisica, int qtdQuadros, int *pageWrite, int
 
 
 /*
- * Variaveis Globais
+ *  
+ *	IMPLEMENTACAO
+ * 
 */
-static FILE* output;
 
 int main(int argc, char* argv[]) {
 
@@ -81,6 +83,14 @@ int main(int argc, char* argv[]) {
 	int DEBUG = 0;
 	Page **memVirtual;
 	int *memFisica;
+	FILE* output;
+
+	//REDIRECIONANDO SAIDA PARA ARQUIVO SAIDA.TXT
+	output = fopen("saida.txt","w");
+	if (output == NULL)
+		t_error("Erro abrir saida.txt");
+
+	dup2(fileno(output),1);
 
 	/* Leitura de Parametros */
 	if (argc < 5 || argc > 6) {
@@ -102,7 +112,6 @@ int main(int argc, char* argv[]) {
 	if(tamPagina < 8 || tamPagina > 32)
 		t_error("Tamanho de pagina nao suportado. Apenas 8-32 KB");
 
-	//TODO: Checar se entrada deve ser em KB e se 16384KB de fato são 16 MB
 	sscanf(argv[4],"%d",&tamMem);
 	if(tamMem < 126 || tamMem > 16384)
 		t_error("Tamanho de memoria fisica invalido. Apenas 128-16384KB (16MB)");
@@ -110,16 +119,14 @@ int main(int argc, char* argv[]) {
 	//TODO: Niveis de DEBUG
 	if (argc == 6) {
 		sscanf(argv[5],"-%d",&DEBUG);
+		if (DEBUG < 1 || DEBUG > 3)
+			t_error("Nivel detalhamento modo debug invalido. Apenas 1-3");
 		printf("Modo Debug Ativo Nivel Detalhamento %d.\n", DEBUG );
 	}
 
-	output = fopen("saida.txt","w");
-	if (output == NULL)
-		t_error("Erro abrir saida.txt");
-
 	/**************************/
-
-	printf("Executando o Simulador...\n");
+	if (DEBUG)
+		printf("Executando o Simulador...\n");
 
 	/* Quantidade de quadros na memoria fisica */
 	qtdQuadros = tamMem/tamPagina;
