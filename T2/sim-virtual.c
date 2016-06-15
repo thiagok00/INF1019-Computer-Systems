@@ -11,12 +11,9 @@
  *
  * O simulador deverá ter os seguintes quatro argumentos de linha de commando:	  	  
  *  a) o algoritmo de  susbtituição de página sendo simulado (LRU/NRU/SEG)	  
- *
- *  b) o arquivo contendo a	sequência de endereços de memoria acessados	(arq.log)	
- *  
+ *  b) o arquivo contendo a	sequência de endereços de memoria acessados	(arq.log)	  
  *  c) o tamanho de cada página/quadro de página em KB (tamanhos a serem suportados 8 a 32 KB)  
  *  d) o tamanho total de memoria física disponível em KB (faixa de valores: 128 KB a 16 MB).	
- *
  *  e) (opcional) Nivel detalhamento para modo DEBUG: -X 
  *
  * Exemplos:
@@ -160,6 +157,7 @@ int main(int argc, char* argv[]) {
 	if (memFisica == NULL)
 		t_error("Memoria Insuficiente para memoria virtual.");
 
+
 	timer = 0;
 	quadrosUsados = 0;
 	while (fscanf(input, "%x %c ", &addr, &rw) != EOF) {
@@ -170,17 +168,24 @@ int main(int argc, char* argv[]) {
 		pageIndex = addr >> bitsIndice;
 	 	p = memVirtual[pageIndex];
 
-		if(p->present) {
+	 	if(DEBUG) {
+	 		printf("Tempo: %d Pagina %d Acesso %c\n",timer,pageIndex,rw);
+	 	}
 
+		if(p->present) {
+			 if(DEBUG >=2)
+			 	printf("Pagina presente em quadro: %d\n",p->pageIndex);
 		}
-		else {
+		else { //PAGINA NAO PRESENTE EM MEMORIA
 			int index;
 			pageFault++;
 			//Ainda existem quadros disponiveis na memoria
 			if( quadrosUsados < qtdQuadros) {
+				 if(DEBUG >=2)
+				 	printf("Quadro %d vazio. Pagina movida\n",quadrosUsados);
 				index = quadrosUsados;
-				quadrosUsados++;		
-						}
+				quadrosUsados++;			
+			}
 			else {	//Sem espaço, chama algoritmo e substituicao
 				if (strcmp(algoritmo,"NRU") == 0)
 					index = t_nru(memVirtual, memFisica, qtdQuadros, &pageWrite,timer);
@@ -188,6 +193,8 @@ int main(int argc, char* argv[]) {
 					index = t_lru(memVirtual, memFisica, qtdQuadros, &pageWrite);
 				else
 					index = t_seg(memVirtual, memFisica, qtdQuadros, &pageWrite,timer);
+				if(DEBUG >=2)
+			 		printf("Sem moldura. Alg Subst removeu pagina: %d para dar espaco.\n",index);
 			}
 				p->present = true;
 				p->pageIndex = index;
@@ -201,6 +208,27 @@ int main(int argc, char* argv[]) {
 		if (rw == 'W')
 			p->m = true;
 		p->ultimoAcesso = timer;
+
+
+		if (DEBUG) {
+			int k;
+			for (k = 0; k < qtdQuadros; k++){
+				if (k < quadrosUsados) {
+					Page *dpage = memVirtual[memFisica[k]];
+					printf("Quadro %d: %d R:%d M:%d ",k,memFisica[dpage->pageIndex],dpage->r,dpage->m);
+					if (DEBUG >= 2)
+						printf("Time ultimo Acesso:%d /",dpage->ultimoAcesso);
+					else
+						printf("/");
+				}
+				else
+					printf("X /");
+			}
+			printf("\n\n");
+			if (DEBUG > 2) {
+				sleep(2);
+			}
+		}
 
 		timer++;		
 	}
@@ -245,7 +273,7 @@ int t_lru(Page **memVirtual, int *memFisica, int qtdQuadros, int *pageWrite) {
 	lastPage->pageIndex = 0;
 	lastPage->ultimoAcesso = 0;
 	return last;
-}
+}	
 
 int get_categoria(Page *p) {
 
