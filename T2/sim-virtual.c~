@@ -301,7 +301,7 @@ int t_nru(Page **memVirtual, int *memFisica, int qtdQuadros, int *pageWrite, int
 		Page *p = memVirtual[memFisica[i]];
 		int cat;
 
-		if (p->ultimoAcesso < timer - 20) {
+		if (p->ultimoAcesso < timer - 10) {
 			p->r = false;
 		}
 
